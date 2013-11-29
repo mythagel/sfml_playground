@@ -16,3 +16,7 @@ add_executable(basic basic.cpp)
 
 target_link_libraries(basic ${SFML_LIBRARIES})
 
+add_executable(xerces_basic xerces.cpp)
+
+target_link_libraries(xerces_basic xerces-c)
+
