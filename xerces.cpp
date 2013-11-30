@@ -50,25 +50,8 @@ svg datatypes
 namespace svg
 {
 
-namespace element
+namespace attributes
 {
-
-struct desc
-{
-};
-struct title
-{
-};
-struct metadata
-{
-};
-
-template<typename Allowed...>
-struct switch_
-{
-    typedef boost::variant<Allowed...> types;
-    std::vector<types> members;
-};
 
 struct viewBox
 {
@@ -144,11 +127,79 @@ struct nav
     std::string up_left = "auto";
 };
 
+}
+
+namespace element
+{
+
+struct desc
+{
+};
+struct title
+{
+};
+struct metadata
+{
+};
+template<typename Allowed...>
+struct switch_
+{
+    std::vector<boost::variant<Allowed..., switch_>> members;
+};
+
 struct g
 {
-    focusable focusable_ = focusable::auto_;
-    nav nav_;
+    attribute::focusable focusable = attribute::focusable::auto_;
+    attribute::nav nav;
 };
+
+typedef boost::variant<
+                desc, title, metadata, switch_<desc, title, metadata>,
+                animate, set, animateColor, animateTransform, animateMotion,
+                animation,
+                audio,
+                discard,
+                foreignObject,
+                textArea,
+                font, font_face,
+                linearGradient, radialGradient,
+                handler,
+                image,
+                prefetch,
+                script,
+                path, rect, circle, line, ellipse, polyline, polygon,
+                solidColor,
+                text,
+                video,
+                listener,
+                g,
+                defs,
+                use,
+                switch_<
+                    desc, title, metadata, switch_<desc, title, metadata>,
+                    animate, set, animateColor, animateTransform, animateMotion,
+                    animation,
+                    audio,
+                    discard,
+                    foreignObject,
+                    textArea,
+                    font, font_face,
+                    linearGradient, radialGradient,
+                    handler,
+                    image,
+                    prefetch,
+                    script,
+                    path, rect, circle, line, ellipse, polyline, polygon,
+                    solidColor,
+                    text,
+                    video,
+                    listener,
+                    g,
+                    defs,
+                    use,
+                    a
+                >
+                 > GCommon;
 
 struct svg
 {
@@ -191,9 +242,7 @@ struct svg
     focusable focusable_ = focusable::auto_;
     nav nav_;
     
-    
-    boost::variant<
-                    desc, title, metadata, switch_<desc, title, metadata/*, recursive...*/> >
+    std::vector<GCommon> children;
 };
 
 }
