@@ -7,6 +7,8 @@
 #include <iostream>
 #include <boost/optional.hpp>
 
+// feels like a lost cause.
+
 /*
 svg datatypes
 
