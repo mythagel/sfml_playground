@@ -13,10 +13,7 @@ FIND_PACKAGE(SFML 2 COMPONENTS system window graphics audio REQUIRED)
 include_directories(${SFML_INCLUDE_DIR})
 
 add_executable(basic basic.cpp)
-
 target_link_libraries(basic ${SFML_LIBRARIES})
 
-add_executable(xerces_basic xerces.cpp)
-
-target_link_libraries(xerces_basic xerces-c)
-
+#add_executable(backplot backplot.cpp)
+#target_link_libraries(backplot ${SFML_LIBRARIES})
