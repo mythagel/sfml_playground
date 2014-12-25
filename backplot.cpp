@@ -1,79 +1,74 @@
 #include <SFML/Graphics.hpp>
-#include <SFML/OpenGL.hpp>
+
+#include <osgViewer/Viewer>
+#include <osgGA/TrackballManipulator>
+#include <osgGA/StateSetManipulator>
+
 #include <iostream>
 
-struct vector_2 {
-    double x = 0.0;
-    double y = 0.0;
-
-    vector_2() = default;
-    vector_2(double x, double y)
-     : x(x), y(y) {
-    }
-};
-struct vector_3 {
-    double x = 0.0;
-    double y = 0.0;
-    double z = 0.0;
-
-    vector_3() = default;
-    vector_3(double x, double y, double z)
-     : x(x), y(y), z(z) {
-    }
-};
-
-
 int main() {
-    double fov = 120.0;
-    double zNear = 0.1;
-    double zFar = 100.0f;
+    sf::VideoMode mode = sf::VideoMode::getDesktopMode();
+    mode.width = 800;
+    mode.height = 600;
 
-    vector_3 eye{0,0,10};
-    vector_3 center;
-    vector_3 up{0,0,1};
-
-    sf::Window window(sf::VideoMode(800, 600), "SFML Basic");
+    sf::Window window(mode, "SFML Basic");
     window.setVerticalSyncEnabled(true);
 
-    // Enable Z-buffer read and write
-    glEnable(GL_DEPTH_TEST);
-    glDepthMask(GL_TRUE);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClearDepth(1.f);
+//    osg::setNotifyLevel(osg::DEBUG_INFO);
 
-    // Reshape
-    {
-        auto x = window.getSize().x;
-        auto y = window.getSize().y;
-        auto aspect = x/y;
+    osgViewer::Viewer viewer;
+    sf::Vector2u size = window.getSize();
+    auto gw = viewer.setUpViewerAsEmbeddedInWindow(0, 0, size.x, size.y);
 
-        glViewport(0, 0, x, y);
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        gluPerspective(fov, aspect, zNear, zFar);
-        glMatrixMode(GL_MODELVIEW);
-    }
+    viewer.setCameraManipulator(new osgGA::TrackballManipulator);
+    osg::ref_ptr<osgGA::StateSetManipulator> statesetManipulator = new osgGA::StateSetManipulator(viewer.getCamera()->getStateSet());
+    viewer.addEventHandler(statesetManipulator.get());
 
+    viewer.realize();
 
+    auto adapt = [gw](const sf::Event& event) {
+        auto eq = gw->getEventQueue();
+        switch(event.type) {
+            case sf::Event::Resized:
+                eq->windowResize(0, 0, event.size.width, event.size.height);
+                break;
+            case sf::Event::MouseWheelMoved:
+                eq->mouseWarped(event.mouseWheel.x, event.mouseWheel.y);
+                eq->mouseScroll(event.mouseWheel.delta > 0 ? osgGA::GUIEventAdapter::SCROLL_UP : osgGA::GUIEventAdapter::SCROLL_DOWN);
+                break;
+            case sf::Event::MouseMoved:
+                eq->mouseMotion(event.mouseMove.x, event.mouseMove.y);
+                break;
+            case sf::Event::MouseButtonPressed:
+                if (event.mouseButton.button == sf::Mouse::Left)
+                    eq->mouseButtonPress(event.mouseButton.x, event.mouseButton.y, 1);
+                if (event.mouseButton.button == sf::Mouse::Right)
+                    eq->mouseButtonPress(event.mouseButton.x, event.mouseButton.y, 3);
+                if (event.mouseButton.button == sf::Mouse::Middle)
+                    eq->mouseButtonPress(event.mouseButton.x, event.mouseButton.y, 2);
+                break;
+            case sf::Event::MouseButtonReleased:
+                if (event.mouseButton.button == sf::Mouse::Left)
+                    eq->mouseButtonRelease(event.mouseButton.x, event.mouseButton.y, 1);
+                if (event.mouseButton.button == sf::Mouse::Right)
+                    eq->mouseButtonRelease(event.mouseButton.x, event.mouseButton.y, 3);
+                if (event.mouseButton.button == sf::Mouse::Middle)
+                    eq->mouseButtonRelease(event.mouseButton.x, event.mouseButton.y, 2);
+                break;
+        }
+    };
+ 
     for(bool running = true; running; ) {
         sf::Event event;
         while (window.pollEvent(event)) {
+            adapt(event);
             switch(event.type) {
                 case sf::Event::Closed:
                     running = false;
                     break;
-                case sf::Event::Resized: {
-                    auto x = event.size.width;
-                    auto y = event.size.height;
-                    auto aspect = x/y;
-
-                    glViewport(0, 0, x, y);
-                    glMatrixMode(GL_PROJECTION);
-                    glLoadIdentity();
-                    gluPerspective(fov, aspect, zNear, zFar);
-                    glMatrixMode(GL_MODELVIEW);
+                case sf::Event::Resized:
+                    gw->resized(0, 0, event.size.width, event.size.height);
                     break;
-                }
                 case sf::Event::KeyPressed: {
                     std::cout << "key: " << event.key.code << "\n";
                     std::cout << "control:" << event.key.control << "\n";
@@ -81,44 +76,10 @@ int main() {
                     //if (event.key.code == sf::Keyboard::Escape)
                     break;
                 }
-                case sf::Event::MouseWheelMoved: {
-                    std::cout << "wheel movement: " << event.mouseWheel.delta << std::endl;
-                    std::cout << "mouse x: " << event.mouseWheel.x << std::endl;
-                    std::cout << "mouse y: " << event.mouseWheel.y << std::endl;
-                    break;
-                }
-                case sf::Event::MouseButtonPressed: {
-                    if (event.mouseButton.button == sf::Mouse::Right) {
-                        std::cout << "the right button was pressed" << std::endl;
-                        std::cout << "mouse x: " << event.mouseButton.x << std::endl;
-                        std::cout << "mouse y: " << event.mouseButton.y << std::endl;
-                    }
-                    break;
-                }
-                case sf::Event::MouseMoved: {
-                    std::cout << "new mouse x: " << event.mouseMove.x << std::endl;
-                    std::cout << "new mouse y: " << event.mouseMove.y << std::endl;
-                    break;
-                }
             }
         }
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glLoadIdentity();
-        gluLookAt(eye.x, eye.y, eye.z, center.x, center.y, center.z, up.x, up.y, up.z);
-
-        glTranslatef(1.5f, 0.0f, -7.0f);
-        glLineWidth(10.0);
-        glColor3f(1.0f, 0.0f, 0.0f);
-        glBegin(GL_LINES);
-            glVertex3f(0,0,-1);
-            glVertex3f(10,0,-1);
-            glVertex3f(10,10,-1);
-            glVertex3f(0,10,-1);
-        glEnd();
-
-        glFlush();
-
+        viewer.frame();
         window.display();
     }
 
