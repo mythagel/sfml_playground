@@ -9,11 +9,14 @@ IF(UNIX)
 ENDIF()
 
 FIND_PACKAGE(SFML 2 COMPONENTS system window graphics audio REQUIRED)
+FIND_PACKAGE(OpenGL REQUIRED)
+FIND_PACKAGE(OpenSceneGraph REQUIRED)
 
-include_directories(${SFML_INCLUDE_DIR})
+
+include_directories(${SFML_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${OPENSCENEGRAPH_INCLUDE_DIRS})
 
 add_executable(basic basic.cpp)
 target_link_libraries(basic ${SFML_LIBRARIES})
 
-#add_executable(backplot backplot.cpp)
-#target_link_libraries(backplot ${SFML_LIBRARIES})
+add_executable(backplot backplot.cpp)
+target_link_libraries(backplot ${SFML_LIBRARIES} ${OPENGL_LIBRARIES} ${OPENSCENEGRAPH_LIBRARIES})
