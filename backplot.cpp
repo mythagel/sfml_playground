@@ -6,12 +6,45 @@
 
 #include <iostream>
 
+osg::Node* createBackplot()
+{
+    auto geode = new osg::Geode();
+
+    auto geom = new osg::Geometry();
+
+    auto vertices = new osg::Vec3Array;
+    vertices->reserve(8);
+    vertices->push_back({-1.13704, -2.15188e-09, 0.40373});
+    vertices->push_back({-0.856897, -2.15188e-09, 0.531441});
+    vertices->push_back({-0.889855, -2.15188e-09, 0.444927});
+    vertices->push_back({-0.568518, -2.15188e-09, 0.40373});
+    vertices->push_back({-1.00933, -2.15188e-09, 0.370773});
+    vertices->push_back({-0.716827, -2.15188e-09, 0.292498});
+    vertices->push_back({-1.07936, 9.18133e-09, 0.317217});
+    vertices->push_back({-0.700348, 9.18133e-09, 0.362533});
+    geom->setVertexArray(vertices);
+
+    auto colors = new osg::Vec4Array;
+    colors->push_back({1.0f,0.0f,0.0f,1.0f});
+    geom->setColorArray(colors, osg::Array::BIND_OVERALL);
+
+    auto normals = new osg::Vec3Array;
+    normals->push_back({0.0f,-1.0f,0.0f});
+    geom->setNormalArray(normals, osg::Array::BIND_OVERALL);
+
+    //geom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINES,0,vertices->size()));
+    geom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP,0,vertices->size()));
+
+    geode->addDrawable(geom);
+    return geode;
+}
+
 int main() {
     sf::VideoMode mode = sf::VideoMode::getDesktopMode();
     mode.width = 800;
     mode.height = 600;
 
-    sf::Window window(mode, "SFML Basic");
+    sf::Window window(mode, "Backplot");
     window.setVerticalSyncEnabled(true);
 
 //    osg::setNotifyLevel(osg::DEBUG_INFO);
@@ -23,6 +56,8 @@ int main() {
     viewer.setCameraManipulator(new osgGA::TrackballManipulator);
     osg::ref_ptr<osgGA::StateSetManipulator> statesetManipulator = new osgGA::StateSetManipulator(viewer.getCamera()->getStateSet());
     viewer.addEventHandler(statesetManipulator.get());
+
+    viewer.setSceneData(createBackplot());
 
     viewer.realize();
 
